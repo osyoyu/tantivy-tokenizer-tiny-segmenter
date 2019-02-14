@@ -5,3 +5,5 @@ authors = ["osyoyu <osyoyu@osyoyu.com>"]
 edition = "2018"
 
 [dependencies]
+tantivy = "0.8"
+tinysegmenter = "0.1"
