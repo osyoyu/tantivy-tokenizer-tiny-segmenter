@@ -54,9 +54,9 @@ fn main() -> tantivy::Result<()> {
                    どうも咽せぽくて実に弱った。これが人間の飲む煙草というものである事はようやくこの頃知った。"#,
     ));
     index_writer.commit()?;
-    index.load_searchers()?;
 
-    let searcher = index.searcher();
+    let reader = index.reader()?;
+    let searcher = reader.searcher();
 
     let query_parser = QueryParser::for_index(&index, vec![body]);
 
