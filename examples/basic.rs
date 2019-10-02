@@ -1,19 +1,28 @@
-// This example is a modified version of the `custom_tokenizer` example included in Tantvy.
-
-#[macro_use]
-extern crate tantivy;
-
+// # Defining a tokenizer pipeline
+//
+// In this example, we'll see how to define a tokenizer pipeline
+// by aligning a bunch of `TokenFilter`.
 use tantivy::collector::TopDocs;
 use tantivy::query::QueryParser;
 use tantivy::schema::*;
-use tantivy::Index;
-
+use tantivy::tokenizer::NgramTokenizer;
+use tantivy::{doc, Index};
 use tantivy_tokenizer_tiny_segmenter::tokenizer::TinySegmenterTokenizer;
-
 fn main() -> tantivy::Result<()> {
-    // Start building a new schema.
+    // # Defining the schema
+    //
+    // The Tantivy index requires a very strict schema.
+    // The schema declares which fields are in the index,
+    // and for each field, its type and "the way it should
+    // be indexed".
+
+    // first we need to define a schema ...
     let mut schema_builder = Schema::builder();
 
+    // Our first field is title.
+    // In this example we want to use NGram searching
+    // we will set that to 3 characters, so any three
+    // char in the title should be findable.
     // Create a new field `body` using TinySegmenter as the tokenizer.
     let text_field_indexing = TextFieldIndexing::default()
         .set_tokenizer("tinyseg")
@@ -23,16 +32,38 @@ fn main() -> tantivy::Result<()> {
         .set_stored();
     let body = schema_builder.add_text_field("body", text_options);
 
+    // Our second field is body.
+    // We want full-text search for it, but we do not
+    // need to be able to be able to retrieve it
+    // for our application.
+    //
+    // We can make our index lighter and
+    // by omitting `STORED` flag.
+    //let body = schema_builder.add_text_field("body", TEXT);
+
     let schema = schema_builder.build();
 
-    // Create a new index from the schema.
+    // # Indexing documents
+    //
+    // Let's create a brand new index.
+    // To simplify we will work entirely in RAM.
+    // This is not what you want in reality, but it is very useful
+    // for your unit tests... Or this example.
     let index = Index::create_in_ram(schema.clone());
 
     // Register TinySegmenterTokenizer as "tinyseg".
-    index.tokenizers().register("tinyseg", TinySegmenterTokenizer {});
+    index
+        .tokenizers()
+        .register("tinyseg", TinySegmenterTokenizer {});
 
+    // To insert document we need an index writer.
+    // There must be only one writer at a time.
+    // This single `IndexWriter` is already
+    // multithreaded.
+    //
+    // Here we use a buffer of 50MB per thread. Using a bigger
+    // heap for the indexer can increase its throughput.
     let mut index_writer = index.writer(50_000_000)?;
-
     index_writer.add_document(doc!(
         body => "日本語の本文",
     ));
@@ -54,17 +85,21 @@ fn main() -> tantivy::Result<()> {
                    どうも咽せぽくて実に弱った。これが人間の飲む煙草というものである事はようやくこの頃知った。"#,
     ));
     index_writer.commit()?;
-    index.load_searchers()?;
 
-    let searcher = index.searcher();
+    let reader = index.reader()?;
+    let searcher = reader.searcher();
 
+    // The query parser can interpret human queries.
+    // Here, if the user does not specify which
+    // field they want to search, tantivy will search
+    // in both title and body.
     let query_parser = QueryParser::for_index(&index, vec![body]);
 
-    // Search for "人間", which is contained in the 2nd and 3rd document.
+    // here we want to get a hit on the 'ken' in Frankenstein
     let query = query_parser.parse_query("人間")?;
 
-    // Sort results by relavance and print them.
     let top_docs = searcher.search(&query, &TopDocs::with_limit(10))?;
+
     for (_, doc_address) in top_docs {
         let retrieved_doc = searcher.doc(doc_address)?;
         println!("{}", schema.to_json(&retrieved_doc));

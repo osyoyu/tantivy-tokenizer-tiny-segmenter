@@ -1,6 +1,6 @@
 [package]
 name = "tantivy-tokenizer-tiny-segmenter"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["osyoyu <osyoyu@osyoyu.com>"]
 edition = "2018"
 description = "A Japanese tokenizer for Tantivy, based on TinySegmenter."
@@ -10,5 +10,5 @@ keywords = ["tantivy", "tokenizer", "japanese"]
 license = "MIT"
 
 [dependencies]
-tantivy = "0.8"
+tantivy = "0.10.1"
 tinysegmenter = "0.1"
