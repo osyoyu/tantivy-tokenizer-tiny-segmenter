@@ -18,10 +18,6 @@ fn main() -> tantivy::Result<()> {
     // first we need to define a schema ...
     let mut schema_builder = Schema::builder();
 
-    // Our first field is title.
-    // In this example we want to use NGram searching
-    // we will set that to 3 characters, so any three
-    // char in the title should be findable.
     // Create a new field `body` using TinySegmenter as the tokenizer.
     let text_field_indexing = TextFieldIndexing::default()
         .set_tokenizer("tinyseg")
@@ -30,15 +26,6 @@ fn main() -> tantivy::Result<()> {
         .set_indexing_options(text_field_indexing)
         .set_stored();
     let body = schema_builder.add_text_field("body", text_options);
-
-    // Our second field is body.
-    // We want full-text search for it, but we do not
-    // need to be able to be able to retrieve it
-    // for our application.
-    //
-    // We can make our index lighter and
-    // by omitting `STORED` flag.
-    //let body = schema_builder.add_text_field("body", TEXT);
 
     let schema = schema_builder.build();
 
@@ -94,7 +81,7 @@ fn main() -> tantivy::Result<()> {
     // in both title and body.
     let query_parser = QueryParser::for_index(&index, vec![body]);
 
-    // here we want to get a hit on the 'ken' in Frankenstein
+    // Search for "人間", which is contained in the 2nd and 3rd document.
     let query = query_parser.parse_query("人間")?;
 
     let top_docs = searcher.search(&query, &TopDocs::with_limit(10))?;
