@@ -11,4 +11,4 @@ license = "MIT"
 
 [dependencies]
 tantivy = "0.10.2"
-tinysegmenter = "0.1"
+tinysegmenter = "0.1.1"
