@@ -5,7 +5,6 @@
 use tantivy::collector::TopDocs;
 use tantivy::query::QueryParser;
 use tantivy::schema::*;
-use tantivy::tokenizer::NgramTokenizer;
 use tantivy::{doc, Index};
 use tantivy_tokenizer_tiny_segmenter::tokenizer::TinySegmenterTokenizer;
 fn main() -> tantivy::Result<()> {
