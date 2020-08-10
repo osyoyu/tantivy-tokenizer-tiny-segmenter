@@ -10,5 +10,5 @@ keywords = ["tantivy", "tokenizer", "japanese"]
 license = "MIT"
 
 [dependencies]
-tantivy = "0.10.2"
+tantivy = "0.12.0"
 tinysegmenter = "0.1.1"

@@ -37,10 +37,10 @@ impl TokenStream for TinySegmenterTokenStream {
                     position_length: 1,
                 };
 
-                return true;
+                true
             }
 
-            None => return false,
+            None => false,
         }
     }
 
