@@ -1,4 +1,4 @@
-use tantivy::tokenizer::Tokenizer;
+use tantivy::tokenizer::{BoxTokenStream, Tokenizer};
 
 use crate::token_stream::TinySegmenterTokenStream;
 
@@ -6,10 +6,8 @@ use crate::token_stream::TinySegmenterTokenStream;
 #[derive(Clone)]
 pub struct TinySegmenterTokenizer;
 
-impl<'a> Tokenizer<'a> for TinySegmenterTokenizer {
-    type TokenStreamImpl = TinySegmenterTokenStream;
-
-    fn token_stream(&self, text: &'a str) -> Self::TokenStreamImpl {
-        TinySegmenterTokenStream::new(text)
+impl Tokenizer for TinySegmenterTokenizer {
+    fn token_stream<'a>(&self, text: &'a str) -> BoxTokenStream<'a> {
+        TinySegmenterTokenStream::new(text).into()
     }
 }
